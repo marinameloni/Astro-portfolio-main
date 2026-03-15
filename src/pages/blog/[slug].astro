@@ -1,0 +1,128 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Nav from "@/components/nav.astro";
+import Footer from "@/components/footer.astro";
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob("/src/content/blog/*.{md,mdx,astro}", {
+    eager: true,
+  });
+  return Object.keys(modules).map((path) => {
+    const slug = path
+      .split("/")
+      .pop()
+      .replace(/\.(md|mdx|astro)$/, "");
+    return { params: { slug } };
+  });
+}
+
+const modules = import.meta.glob("/src/content/blog/*.{md,mdx,astro}", {
+  eager: true,
+});
+const currentKey = Object.keys(modules).find(
+  (k) =>
+    k.endsWith(`/${Astro.params.slug}.md`) ||
+    k.endsWith(`/${Astro.params.slug}.mdx`) ||
+    k.endsWith(`/${Astro.params.slug}.astro`),
+);
+const mod = currentKey ? modules[currentKey] : null;
+const fm = (mod && (mod.frontmatter || mod.props?.frontmatter)) || {};
+const Content = mod && mod.default ? mod.default : null;
+
+const project_title = fm.project_title || fm.title || Astro.params.slug;
+const project_thumbnail =
+  fm.project_thumbnail || fm.thumbnail || fm.image || "";
+const project_images = fm.project_img || fm.images || [];
+const project_description =
+  fm.project_description || fm.description || fm.excerpt || "";
+const project_date = fm.project_date || fm.date || "";
+const project_state = fm.project_state || fm.status || "";
+const project_link = fm.project_link || fm.link || fm.url || "";
+---
+
+<Layout title={project_title}>
+  <Nav />
+
+  <main class="max-w-4xl mx-auto py-16">
+    <article class="prose prose-invert">
+      <header class="mb-6">
+        <h1 class="text-4xl font-bold text-white">{project_title}</h1>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="flex flex-col">
+            <span class="text-sm text-[var(--white-icon)]">Date</span>
+            <strong class="text-[var(--white)]">{project_date || "—"}</strong>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-sm text-[var(--white-icon)]">Statut</span>
+            <strong class="text-[var(--white)]">{project_state || "—"}</strong>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-sm text-[var(--white-icon)]">Lien</span>
+            {
+              project_link ? (
+                <a
+                  href={project_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-block mt-1 text-sm text-[var(--sec)] hover:underline"
+                >
+                  {project_link}
+                </a>
+              ) : (
+                <strong class="text-[var(--white)]">—</strong>
+              )
+            }
+          </div>
+        </div>
+      </header>
+
+      {
+        project_thumbnail ? (
+          <div class="mt-6">
+            <img
+              src={project_thumbnail}
+              alt={project_title}
+              class="w-full rounded-lg mb-6 object-cover"
+            />
+          </div>
+        ) : null
+      }
+
+      <section class="mb-6">
+        <h2 class="text-2xl font-semibold mb-2 text-gray-100">Description</h2>
+        {
+          project_description ? (
+            <p class="text-[var(--white-icon)]">{project_description}</p>
+          ) : null
+        }
+      </section>
+
+      {
+        project_images.length > 0 ? (
+          <section class="mb-6">
+            <h3 class="text-xl font-semibold mb-3 text-gray-400">Galerie</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {project_images.map((src) => (
+                <img
+                  src={src}
+                  alt={project_title}
+                  class="w-full rounded-lg object-cover"
+                />
+              ))}
+            </div>
+          </section>
+        ) : null
+      }
+
+      {
+        Content ? (
+          <section class="prose prose-invert mt-6">
+            <Content />
+          </section>
+        ) : null
+      }
+    </article>
+  </main>
+
+  <Footer />
+</Layout>
