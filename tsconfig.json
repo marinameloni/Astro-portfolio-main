@@ -17,8 +17,7 @@
         "src/components/*"
       ]
     },
-    "jsx": "react-jsx",
-    "jsxImportSource": "react"
+    "jsx": "react"
   },
   "include": [
     "src/**/*",

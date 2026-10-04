@@ -1,20 +1,25 @@
 ---
 const technologies = [
-  "astro",
-  "vue",
-  "vite",
-  "react",
-  "typeScript",
-  "tailwindcss",
-  "nuxt",
-  "nodejs",
-  "HTML5",
-  "CSS3",
-  "javaScript",
-  "git",
-  "pocketbase",
-  "sqlite",
-  "ssh",
+  { name: "Astro", icon: "astro" },
+  { name: "Vue.js", icon: "vue" },
+  { name: "Vite", icon: "vite" },
+  { name: "React", icon: "react" },
+  { name: "TypeScript", icon: "typeScript" },
+  { name: "Tailwind CSS", icon: "tailwindcss" },
+  { name: "Nuxt", icon: "nuxt" },
+  { name: "Node.js", icon: "nodejs" },
+  { name: "Three.js", icon: "threejs" },
+  { name: "Express", icon: "express" },
+  { name: "PostgreSQL", icon: "postgresql" },
+  { name: "Pinia", icon: "pinia" },
+  { name: "Docker", icon: "docker" },
+  { name: "HTML5", icon: "HTML5" },
+  { name: "CSS3", icon: "CSS3" },
+  { name: "JavaScript", icon: "javaScript" },
+  { name: "Git", icon: "git" },
+  { name: "PocketBase", icon: "pocketbase" },
+  { name: "SQLite", icon: "sqlite" },
+  { name: "SSH", icon: "ssh" },
 ];
 ---
 
@@ -25,21 +30,21 @@ const technologies = [
   <div class="flex animate-scroll w-max will-change-transform">
     {
       [...technologies, ...technologies].map((tech, index) => (
-        <div 
+        <div
           class="flex items-center gap-2 pr-12 md:pr-20 group transition-all duration-300"
           aria-hidden={index >= technologies.length ? "true" : "false"}
         >
           <img
-            src={`/svg/${tech}.svg`}
-            alt={tech}
-            class="h-7 w-auto object-contain transition-transform group-hover:scale-110 opacity-60"
+            src={`/svg/${tech.icon}.svg`}
+            alt={`${tech.name} logo`}
+            class="h-8 w-8 object-contain transition-transform group-hover:scale-110 opacity-75"
             width="30"
             height="30"
             loading={index < technologies.length ? "eager" : "lazy"}
             decoding="async"
           />
-          <span class="text-lg font-medium text-[var(--white-icon)] whitespace-nowrap">
-            {tech.charAt(0).toUpperCase() + tech.slice(1)}
+          <span class="text-base md:text-lg font-medium text-[var(--white-icon)] whitespace-nowrap">
+            {tech.name}
           </span>
         </div>
       ))

@@ -1,5 +1,42 @@
 ---
+const modules = import.meta.glob("/src/content/blog/*.{md,mdx,astro}", {
+  eager: true,
+}) as Record<string, any>;
 
+const projects = Object.entries(modules)
+  .map(([path, mod]) => {
+    const slug = path
+      .split("/")
+      .pop()
+      .replace(/\.(md|mdx|astro)$/, "");
+    const fm = (mod && (mod.frontmatter || mod.props?.frontmatter)) || {};
+    const rawDesc =
+      fm.project_description || fm.description || fm.excerpt || "";
+    const descPlain = rawDesc
+      .replace(/<[^>]+>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const excerpt =
+      descPlain.length > 100 ? descPlain.slice(0, 100) + "…" : descPlain;
+
+    return {
+      id: slug,
+      project_title: fm.project_title || fm.title || slug,
+      project_thumbnail: fm.project_thumbnail || fm.thumbnail || fm.image || "",
+      project_img: fm.project_img || fm.images || [],
+      project_description: rawDesc,
+      project_excerpt: excerpt,
+      project_date: fm.project_date || fm.date || "",
+      project_state: fm.project_state || fm.status || "",
+      project_link: fm.project_link || fm.link || fm.url || "",
+      url: "/blog/" + slug,
+    };
+  })
+  .sort((a, b) => {
+    if (a.id === "repairloop") return 1;
+    if (b.id === "repairloop") return -1;
+    return a.project_date > b.project_date ? -1 : 1;
+  });
 ---
 
 <section
@@ -12,88 +49,56 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       {
-        // Load blog files from /src/content/blog and map frontmatter to project fields
-        Object.entries(
-          import.meta.glob("/src/content/blog/*.{md,mdx,astro}", {
-            eager: true,
-          }),
-        )
-          .map(([path, mod]) => {
-            const slug = path
-              .split("/")
-              .pop()
-              .replace(/\.(md|mdx|astro)$/, "");
-            const fm =
-              (mod && (mod.frontmatter || mod.props?.frontmatter)) || {};
-            return {
-              id: slug,
-              project_title: fm.project_title || fm.title || slug,
-              project_thumbnail:
-                fm.project_thumbnail || fm.thumbnail || fm.image || "",
-              project_img: fm.project_img || fm.images || [],
-              project_description:
-                fm.project_description || fm.description || fm.excerpt || "",
-              project_date: fm.project_date || fm.date || "",
-              project_state: fm.project_state || fm.status || "",
-              project_link: fm.project_link || fm.link || fm.url || "",
-              url: "/blog/" + slug,
-            };
-          })
-          .sort((a, b) => (a.project_date > b.project_date ? -1 : 1))
-          .map((project) => (
-            <div class="group bg-[#0f0f0f] rounded-2xl overflow-hidden">
-              <a href={project.url} class="block">
-                <div class="w-full h-48 md:h-72 bg-[#1414149c] flex items-center justify-center overflow-hidden">
-                  {project.project_thumbnail ? (
-                    <img
-                      src={project.project_thumbnail}
-                      alt={project.project_title}
-                      class="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div class="text-[var(--white-icon)]">No image</div>
-                  )}
-                </div>
+        projects.map((project) => (
+          <div class="group bg-[#0f0f0f] rounded-2xl overflow-hidden">
+            <a href={project.url} class="block">
+              <div class="w-full h-48 md:h-72 bg-[#1414149c] flex items-center justify-center overflow-hidden">
+                {project.project_thumbnail ? (
+                  <img
+                    src={project.project_thumbnail}
+                    alt={project.project_title}
+                    class="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div class="text-[var(--white-icon)]">No image</div>
+                )}
+              </div>
 
-                <div class="p-4">
-                  <h4 class="text-2xl font-semibold">
-                    {project.project_title}
-                  </h4>
-                  <div class="flex items-center justify-between mt-2">
-                    <span class="py-1 text-sm text-[var(--white-icon)]">
-                      {project.project_state}
-                    </span>
-                    <span class="text-sm text-[var(--white-icon)]">
-                      {project.project_date}
-                    </span>
-                  </div>
-                  <p class="mt-3 text-[var(--white-icon)]">
-                    {(project.project_description || "").length > 100
-                      ? (project.project_description || "").slice(0, 100) + "…"
-                      : project.project_description}
-                  </p>
-                  <div class="mt-4 flex items-center gap-3">
-                    <a
-                      href={project.url}
-                      class="text-sm text-[var(--sec)] hover:underline"
-                    >
-                      Voir la fiche
-                    </a>
-                    {project.project_link ? (
-                      <a
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={project.project_link}
-                        class="text-sm bg-[var(--sec)] text-[var(--background)] px-3 py-2 rounded-lg"
-                      >
-                        Voir le projet
-                      </a>
-                    ) : null}
-                  </div>
+              <div class="p-4">
+                <h4 class="text-2xl font-semibold">{project.project_title}</h4>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="py-1 text-sm text-[var(--white-icon)]">
+                    {project.project_state}
+                  </span>
+                  <span class="text-sm text-[var(--white-icon)]">
+                    {project.project_date}
+                  </span>
                 </div>
-              </a>
-            </div>
-          ))
+                <p class="mt-3 text-[var(--white-icon)]">
+                  {project.project_excerpt}
+                </p>
+                <div class="mt-4 flex items-center gap-3">
+                  <a
+                    href={project.url}
+                    class="text-sm text-[var(--sec)] hover:underline"
+                  >
+                    Voir la fiche
+                  </a>
+                  {project.project_link ? (
+                    <a
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={project.project_link}
+                      class="text-sm bg-[var(--sec)] text-[var(--background)] px-3 py-2 rounded-lg"
+                    >
+                      Voir le projet
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            </a>
+          </div>
+        ))
       }
     </div>
   </div>

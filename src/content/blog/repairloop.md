@@ -1,8 +1,8 @@
 ---
 project_title: "Repair loop"
-project_thumbnail: "http://repairloop.paasul.fr/assets/screen1-B7tbMwMV.jpg"
+project_thumbnail: "/repairloop-screen1.jpg"
 project_img:
-  - "http://repairloop.paasul.fr/assets/screen1-B7tbMwMV.jpg"
+  - "/repairloop-screen1.jpg"
 project_description: >
   Retour dans l'univers des MMO des années 2000 ! Avec Repair Loop, le thème étant
   "Réanchanter le monde", j'ai choisi de créer un jeu vidéo collaboratif où chaque

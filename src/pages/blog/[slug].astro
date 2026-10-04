@@ -7,7 +7,7 @@ export async function getStaticPaths() {
   const modules = import.meta.glob("/src/content/blog/*.{md,mdx,astro}", {
     eager: true,
   });
-  return Object.keys(modules).map((path) => {
+  return Object.keys(modules as Record<string, any>).map((path) => {
     const slug = path
       .split("/")
       .pop()
@@ -18,7 +18,7 @@ export async function getStaticPaths() {
 
 const modules = import.meta.glob("/src/content/blog/*.{md,mdx,astro}", {
   eager: true,
-});
+}) as Record<string, any>;
 const currentKey = Object.keys(modules).find(
   (k) =>
     k.endsWith(`/${Astro.params.slug}.md`) ||
@@ -35,6 +35,40 @@ const project_thumbnail =
 const project_images = fm.project_img || fm.images || [];
 const project_description =
   fm.project_description || fm.description || fm.excerpt || "";
+// Convert frontmatter text into safe HTML: preserve existing inline HTML (links),
+// but if there are no block-level tags, transform blank-line paragraphs and simple
+// dash lists into <p> and <ul>/<li> so line breaks are visible.
+const project_description_html = (() => {
+  if (!project_description) return "";
+  // If it already contains block-level HTML, assume it's preformatted and return as-is
+  const hasBlockTag =
+    /<(?:p|div|br|ul|ol|li|h[1-6]|section|article|blockquote|pre|table|tr|td)[\s/>]/i.test(
+      project_description,
+    );
+  if (hasBlockTag) return project_description;
+
+  // Split into blocks by blank lines
+  const blocks = project_description
+    .split(/\n\s*\n/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+  const htmlBlocks = blocks.map((b) => {
+    const lines = b
+      .split(/\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    // If every line starts with a dash or asterisk, render as a list
+    if (lines.every((l) => /^[-*]\s+/.test(l))) {
+      const items = lines
+        .map((l) => `<li>${l.replace(/^[-*]\s+/, "")}</li>`)
+        .join("");
+      return `<ul>${items}</ul>`;
+    }
+    // Otherwise, collapse single line breaks into spaces and wrap in <p>
+    return `<p>${lines.join(" ")}</p>`;
+  });
+  return htmlBlocks.join("");
+})();
 const project_date = fm.project_date || fm.date || "";
 const project_state = fm.project_state || fm.status || "";
 const project_link = fm.project_link || fm.link || fm.url || "";
@@ -92,7 +126,10 @@ const project_link = fm.project_link || fm.link || fm.url || "";
         <h2 class="text-2xl font-semibold mb-2 text-gray-100">Description</h2>
         {
           project_description ? (
-            <p class="text-[var(--white-icon)]">{project_description}</p>
+            <div
+              class="text-[var(--white-icon)]"
+              set:html={project_description_html}
+            />
           ) : null
         }
       </section>
